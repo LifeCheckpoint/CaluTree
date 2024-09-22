@@ -6,6 +6,7 @@ import multiprocessing as mp
 from tqdm import tqdm
 from operator import add, sub, mul, pow
 from opt import *
+from preprocess import *
 from numba import jit
 from itertools import product
 from anytree import Node, RenderTree
@@ -98,23 +99,8 @@ def tree_to_expression(node):
     elif node.name == "6":
         return f"{left_expr}"  # 处理常量
 
-values = np.array([
-    3.1415926535897932, # pi
-    2.7182818284590452, # e
-    1.1557273497909217, # pi/e
-    0.8652559794322651, # e/pi
-    5.8598744820488385, # pi+e
-    0.4233108251307480, # pi-e
-    8.5397342226735671, # pi*e
-    23.140692632779269, # e^pi
-    22.459157718361045 # pi^e
-], dtype=np.float64)
-placeholder = [f"#{i+1}" for i in range(len(values))]
-
-def generate_tree_choices(num_trees, max_depth, propose, eps):
-    
+def generate_tree_to_purpose(num_trees, max_depth, purpose, eps):
     trees = generate_random_trees(operators, placeholder, num_trees=num_trees, max_depth=max_depth)
-
     result_trees = []
     # 遍历生成的树并计算结果
     for _, tree in enumerate(trees):
@@ -123,14 +109,27 @@ def generate_tree_choices(num_trees, max_depth, propose, eps):
         except:
             result = float('inf')
 
-        if abs(result - propose) < np.float64(eps):
+        if abs(result - purpose) < np.float64(eps):
             result_trees.append((tree, result))
+
+    return result_trees
+
+def generate_tree(num_trees, max_depth):
+    trees = generate_random_trees(operators, placeholder, num_trees=num_trees, max_depth=max_depth)
+    result_trees = []
+    # 遍历生成的树并计算结果
+    for _, tree in enumerate(trees):
+        try:
+            result = safe_compute_tree(tree, values)
+            result_trees.append((tree, result))
+        except:
+            continue
 
     return result_trees
 
 def worker_findtree(_):
     try:
-        return generate_tree_choices(opt.num_trying, opt.depth, opt.purpose_number, opt.eps)
+        return generate_tree_to_purpose(opt.num_trying, opt.depth, opt.purpose_number, opt.eps)
     except Exception as e:
         print(f"Error in worker: {e}")
         traceback.print_exc()

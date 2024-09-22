@@ -6,3 +6,7 @@ class opt:
     num_trying = 10 # 进程总数
     profiler = False # 启用性能分析
     purpose_number = 114514 # 目标数字
+
+    subtree_depth = 3 # 子树深度
+    subtree_num = 300 # 尝试建立子树次数
+    subtree_filter = lambda x: abs(x) < 1e7 # 子树过滤器，只有为True不会被筛除 

@@ -43,5 +43,5 @@ addition_values = np.array([
     114516.426867869998 # (pi pi pi)^pi/(pi-e)
 ], dtype=np.float64)
 
-values = np.concatenate((original_values, addition_values, addition_values))
+values = np.concatenate((original_values, sub_values, addition_values))
 placeholder = [f"#{i+1}" for i in range(len(values))]

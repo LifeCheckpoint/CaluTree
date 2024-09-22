@@ -1,11 +1,11 @@
 import warnings
 import traceback
-import torch.profiler
 import random
 import numpy as np
 import multiprocessing as mp
 from tqdm import tqdm
 from operator import add, sub, mul, pow
+from opt import *
 from numba import jit
 from itertools import product
 from anytree import Node, RenderTree
@@ -128,65 +128,10 @@ def generate_tree_choices(num_trees, max_depth, propose, eps):
 
     return result_trees
 
-depth = 6
-eps = 3
-max_processes = 14
-num_iterations = 4
-num_trying = 10
-purpose_number = 114514
-profiler = False
-
 def worker_findtree(_):
     try:
-        return generate_tree_choices(num_trying, depth, purpose_number, eps)
+        return generate_tree_choices(opt.num_trying, opt.depth, opt.purpose_number, opt.eps)
     except Exception as e:
         print(f"Error in worker: {e}")
         traceback.print_exc()
         return []
-
-if __name__ == "__main__":
-    if profiler:
-        with torch.profiler.profile(
-            activities=[
-                torch.profiler.ProfilerActivity.CPU,
-                torch.profiler.ProfilerActivity.CUDA
-            ],
-            schedule=torch.profiler.schedule(
-                wait=1,      # 等待1个步骤后开始记录
-                warmup=1,    # 热身1个步骤
-                active=2     # 在接下来的2个步骤中记录
-            ),
-            profile_memory=True,
-            with_stack=True,
-            on_trace_ready=torch.profiler.tensorboard_trace_handler('./logs')
-        ) as prof:
-            for _ in range(4):
-                worker_findtree(1)
-                prof.step()
-    else:
-        # FIND
-        with mp.Pool(processes=max_processes) as pool:
-            pbar = tqdm(total=num_iterations*num_trying)
-            trees = []
-
-            for result in pool.imap(worker_findtree, iterable=range(num_iterations)):
-                if len(result) > 0:
-                    for tree, calc_result in result:
-                        print(f"Expression {tree_to_expression(tree)}\nCalu {calc_result}")
-
-                    trees.extend(result)
-                pbar.update(num_trying)
-                pbar.set_description(f"Current Result: {len(trees)}")
-
-            pbar.close()
-
-        for tree, calc_result in trees:
-            print(f"Tree:")
-            # for pre, _, node in RenderTree(tree):
-            #     print(f"{pre}{node.name}")
-            print("计算结果:", calc_result)
-            print("表达式：", tree_to_expression(tree))
-            print("\n")
-        
-        if len(trees) == 0:
-            print("未找到目标")

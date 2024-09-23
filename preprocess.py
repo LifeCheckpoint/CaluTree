@@ -17,13 +17,10 @@ using_operators = {
     "6": lambda x: x
 }
 
+# Pi, E, Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E
 original_values = np.array([
-    3.1415926535897932, # pi
-    2.7182818284590452, # e
-], dtype=np.float64)
-
-# Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E
-sub_values = np.array([
+    3.1415926535897932,
+    2.7182818284590452,
     1.1557273497909217179,
     0.86525597943226508722,
     5.8598744820488384738,
@@ -38,10 +35,11 @@ sub_values = np.array([
     36.462159607207911771,
     15.154262241479264190
 ], dtype=np.float64)
-
 addition_values = np.array([
     114516.426867869998 # (pi pi pi)^pi/(pi-e)
 ], dtype=np.float64)
 
-values = np.concatenate((original_values, sub_values, addition_values))
+values = np.concatenate((original_values, addition_values))
+
+# 变量占位符
 placeholder = [f"#{i+1}" for i in range(len(values))]

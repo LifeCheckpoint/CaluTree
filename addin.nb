@@ -1,0 +1,237 @@
+(* Content-type: application/vnd.wolfram.cdf.text *)
+
+(*** Wolfram CDF File ***)
+(* http://www.wolfram.com/cdf *)
+
+(* CreatedBy='Wolfram 14.1' *)
+
+(*************************************************************************)
+(*                                                                       *)
+(*                                                                       *)
+(*  This file was created under the Wolfram Enterprise licensing terms.  *)
+(*                                                                       *)
+(*       For additional information concerning CDF licensing see:        *)
+(*                                                                       *)
+(*        www.wolfram.com/cdf/adopting-cdf/licensing-options.html        *)
+(*                                                                       *)
+(*                                                                       *)
+(*                                                                       *)
+(*************************************************************************)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[      1060,         20]
+NotebookDataLength[      7375,        216]
+NotebookOptionsPosition[      7669,        211]
+NotebookOutlinePosition[      8132,        229]
+CellTagsIndexPosition[      8089,        226]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"symbolList", "=", 
+   RowBox[{"Hold", "@", 
+    RowBox[{"{", 
+     RowBox[{"Pi", ",", "E", ",", 
+      RowBox[{"Pi", "/", "E"}], ",", 
+      RowBox[{"E", "/", "Pi"}], ",", 
+      RowBox[{"Pi", "+", "E"}], ",", 
+      RowBox[{"Pi", "-", "E"}], ",", 
+      RowBox[{"Pi", " ", "E"}], ",", 
+      RowBox[{"E", "^", "Pi"}], ",", 
+      RowBox[{"Pi", "^", "E"}], ",", 
+      RowBox[{"Pi", " ", "Pi"}], ",", 
+      RowBox[{"E", " ", "E"}], ",", 
+      RowBox[{"Pi", "+", "Pi"}], ",", 
+      RowBox[{"E", "+", "E"}], ",", 
+      RowBox[{"Pi", "^", "Pi"}], ",", 
+      RowBox[{"E", "^", "E"}], ",", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"Pi", " ", "Pi", " ", "Pi"}], ")"}], "^", "Pi"}], "/", 
+       RowBox[{"(", 
+        RowBox[{"Pi", "-", "E"}], ")"}]}]}], "}"}]}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"symbolListHold", "=", 
+   RowBox[{
+    RowBox[{"symbolList", "/.", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"s_Symbol", "[", 
+        RowBox[{"a_", ",", "b_"}], "]"}], "->", 
+       RowBox[{"Hold", "[", 
+        RowBox[{"s", "[", 
+         RowBox[{"a", ",", "b"}], "]"}], "]"}]}], "}"}]}], "//", 
+    "ReleaseHold"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"replaceSymbol", "=", 
+   RowBox[{"AssociationThread", "[", 
+    RowBox[{
+     RowBox[{"ToExpression", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"\"\<#\>\"", "<>", 
+         RowBox[{"ToString", "[", "#", "]"}]}], "&"}], "/@", 
+       RowBox[{"Range", "[", 
+        RowBox[{"Length", "[", "symbolListHold", "]"}], "]"}]}], "]"}], "->", 
+     "symbolListHold"}], "]"}]}], ";"}]}], "Input",
+ CellChangeTimes->{3.936071371172537*^9},
+ CellLabel->
+  "In[513]:=",ExpressionUUID->"8a2568d3-6d67-7243-97d4-f56c5e316cce"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"SetAttributes", "[", 
+   RowBox[{"ReplaceExpr", ",", "HoldAll"}], "]"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ReplaceExpr", "[", "expr_", "]"}], ":=", 
+   RowBox[{
+    RowBox[{"Hold", "[", "expr", "]"}], "/.", "replaceSymbol"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ExprRelease", "[", "holdExpr_", "]"}], ":=", 
+   RowBox[{"Nest", "[", 
+    RowBox[{"ReleaseHold", ",", "holdExpr", ",", 
+     RowBox[{"Max", "[", 
+      RowBox[{"Length", "/@", 
+       RowBox[{"Position", "[", 
+        RowBox[{"holdExpr", ",", "Hold"}], "]"}]}], "]"}]}], "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"ExprN", "[", 
+    RowBox[{"holdExpr_", ",", "precision_"}], "]"}], ":=", 
+   RowBox[{"N", "[", 
+    RowBox[{
+     RowBox[{"ExprRelease", "[", "holdExpr", "]"}], ",", "precision"}], 
+    "]"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"Hold2HoldForm", "[", "holdExpr_", "]"}], ":=", 
+   RowBox[{"holdExpr", "/.", 
+    RowBox[{"{", 
+     RowBox[{"Hold", "->", "HoldForm"}], "}"}]}]}], ";"}]}], "Input",
+ CellChangeTimes->{{3.936071406895439*^9, 3.9360714082304955`*^9}, {
+  3.9360714746329*^9, 3.936071554255699*^9}, {3.936071625550375*^9, 
+  3.9360716278034687`*^9}, {3.9360718607273293`*^9, 3.93607190964987*^9}, {
+  3.936072284568386*^9, 3.9360723098166313`*^9}, {3.9360728194781303`*^9, 
+  3.9360728816669235`*^9}},
+ CellLabel->
+  "In[564]:=",ExpressionUUID->"5e2ac85c-8b13-a042-b930-3886bdadfa13"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"DeltaTest", "[", "expr_", "]"}], ":=", 
+   RowBox[{"Block", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "posPi", ",", "posE", ",", "repsPi", ",", "repsE", ",", "deltaPi", ",", 
+       "deltaE"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"posPi", "=", 
+       RowBox[{"Position", "[", 
+        RowBox[{"expr", ",", "Pi"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"posE", "=", 
+       RowBox[{"Position", "[", 
+        RowBox[{"expr", ",", "E"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"repsPi", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"ReplaceAt", "[", 
+          RowBox[{"expr", ",", 
+           RowBox[{"Pi", "->", "x"}], ",", "#"}], "]"}], "&"}], "/@", 
+        "posPi"}]}], ";", 
+      RowBox[{"repsE", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"ReplaceAt", "[", 
+          RowBox[{"expr", ",", 
+           RowBox[{"E", "->", "x"}], ",", "#"}], "]"}], "&"}], "/@", 
+        "posE"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"deltaPi", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"#", ",", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"D", "[", 
+               RowBox[{
+                RowBox[{"ExprRelease", "[", "#", "]"}], ",", "x"}], "]"}], "/.", 
+              RowBox[{"{", 
+               RowBox[{"x", "->", "Pi"}], "}"}]}], "//", "N"}]}], "}"}], 
+          "&"}], "/@", "repsPi"}], "//", 
+        RowBox[{"DeleteCases", "[", 
+         RowBox[{"{", 
+          RowBox[{"_", ",", 
+           RowBox[{"x_", "/;", 
+            RowBox[{"x", "==", "0"}]}]}], "}"}], "]"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"deltaE", "=", 
+       RowBox[{
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"#", ",", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"D", "[", 
+               RowBox[{
+                RowBox[{"ExprRelease", "[", "#", "]"}], ",", "x"}], "]"}], "/.", 
+              RowBox[{"{", 
+               RowBox[{"x", "->", "E"}], "}"}]}], "//", "N"}]}], "}"}], "&"}],
+          "/@", "repsE"}], "//", 
+        RowBox[{"DeleteCases", "[", 
+         RowBox[{"{", 
+          RowBox[{"_", ",", 
+           RowBox[{"x_", "/;", 
+            RowBox[{"x", "==", "0"}]}]}], "}"}], "]"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"Return", "[", 
+       RowBox[{"ReverseSortBy", "[", 
+        RowBox[{
+         RowBox[{"deltaPi", "~", "Join", "~", "deltaE"}], ",", "Last"}], 
+        "]"}], "]"}], ";"}]}], "\[IndentingNewLine]", "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.936072655820593*^9, 3.936072794592449*^9}, {
+  3.936072888992653*^9, 3.9360728981630287`*^9}, {3.9360729696301765`*^9, 
+  3.936073025622013*^9}},ExpressionUUID->"39ce9064-7e35-d544-b19a-\
+e187df9d6cb2"]
+},
+WindowSize->{757.1999999999999, 521.4},
+WindowMargins->{{Automatic, 78.60000000000014}, {
+  106.20000000000005`, Automatic}},
+FrontEndVersion->"14.1 for Microsoft Windows (64-bit) (2024\:5e747\:670816\
+\:65e5)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"c5094a90-8196-b046-9a63-cb7c3379209c"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[1460, 33, 1788, 52, 188, "Input",ExpressionUUID->"8a2568d3-6d67-7243-97d4-f56c5e316cce"],
+Cell[3251, 87, 1536, 41, 202, "Input",ExpressionUUID->"5e2ac85c-8b13-a042-b930-3886bdadfa13"],
+Cell[4790, 130, 2875, 79, 381, "Input",ExpressionUUID->"39ce9064-7e35-d544-b19a-e187df9d6cb2"]
+}
+]
+*)
+

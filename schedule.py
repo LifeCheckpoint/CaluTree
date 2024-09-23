@@ -3,6 +3,12 @@ import multiprocessing as mp
 from tqdm import tqdm
 from tree import *
 from opt import *
+from wl import *
+
+if opt.wolfram_using:
+    wolf = wolfram()
+else:
+    wolf = None
 
 def task_calc_tree_multi():
     tr = calcTree()
@@ -33,6 +39,7 @@ def task_calc_tree_multi():
     if len(trees) == 0:
         print("未找到目标")
 
+# 用于性能测试
 def task_profiler_solo():
     with torch.profiler.profile(
         activities=[
@@ -53,3 +60,6 @@ if __name__ == "__main__":
         task_profiler_solo()
     else:
         task_calc_tree_multi()
+
+    if opt.wolfram_using:
+        wolf.stop()

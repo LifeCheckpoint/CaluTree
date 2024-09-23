@@ -1,16 +1,22 @@
 # wolfram 代码中转
-from wolframclient.evaluation import WolframLanguageSession
-from wolframclient.language import wl, wlexpr
+from opt import *
 
-class wolf:
+if opt.wolfram_using:
+    from wolframclient.evaluation import WolframLanguageSession
+    from wolframclient.language import wl, wlexpr
+
+class wolfram:
     # 执行wolfram语句
     def wolfram_evaluate(self, expr):
         return self.session.evaluate(wlexpr(expr))
 
+    def stop(self):
+        self.session.stop()
+
     # 初始化wolfram语句，支持算法运行
     def __init__(self):
         # 创建wolfram会话
-        self.session = WolframLanguageSession(kernel=r"D:\Programs\Wolfram Mathematica 14.1\MathKernel.exe")
+        self.session = WolframLanguageSession(kernel=opt.wolfram_path)
 
         # 符号替换初始化
         symbol_init = """
@@ -39,8 +45,17 @@ class wolf:
         Return[ReverseSortBy[deltaPi~Join~deltaE,Last]];
         ];
         """
+        
+        if self.wolfram_evaluate(symbol_init) is not None:
+            print("A error occured when Wolfram code 'symbol' loading")
+        if self.wolfram_evaluate(tree_init) is not None:
+            print("A error occured when Wolfram code 'symbol' loading")
+        if self.wolfram_evaluate(diff_init) is not None:
+            print("A error occured when Wolfram code 'symbol' loading")
 
-        self.wolfram_evaluate(symbol_init)
-        self.wolfram_evaluate(tree_init)
-        self.wolfram_evaluate(diff_init)
-
+# 测试用例
+if __name__ == "__main__":
+    wolf = wolfram()
+    eva = wolf.wolfram_evaluate("N[{Pi, E, Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E},17]")
+    print([float(i) for i in list(eva)])
+    wolf.stop()

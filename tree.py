@@ -8,6 +8,8 @@ from anytree import Node
 
 warnings.simplefilter("ignore", RuntimeWarning)
 
+# calcTree仍然用传统的递归计算方法，因为wl的速度不会比原生计算速度高
+
 class calcTree:
     def __init__(self, operators=using_operators, placeholder=placeholder):
         self.operators = operators

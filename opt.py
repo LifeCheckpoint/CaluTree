@@ -9,3 +9,5 @@ class opt:
     precision_limit = 1e15 # 计算限度
     wolfram_using = True # 使用Wolfram完成搜索算法
     wolfram_path = r"D:\Programs\Wolfram Mathematica 14.1\MathKernel.exe" # Wolfram MathKernel路径
+    instant_output = False # 是否即时输出
+    the_first_N = 5 # 保留前N个结果

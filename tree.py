@@ -2,6 +2,7 @@ import warnings
 import traceback
 import random
 import numpy as np
+from typing import Tuple
 from opt import *
 from preprocess import *
 from anytree import Node
@@ -85,7 +86,7 @@ class calcTree:
         elif node.name == "6": # 恒等函数
             return f"{left_expr}"
 
-def generate_tree_to_purpose(num_trees, max_depth, purpose, eps):
+def generate_tree_to_purpose(num_trees, max_depth, purpose, eps) -> Tuple[Node, float, float]:
     tr = calcTree()
     trees = tr.generate_multi_random_trees(num_trees=num_trees, max_depth=max_depth)
     result_trees = []
@@ -97,9 +98,9 @@ def generate_tree_to_purpose(num_trees, max_depth, purpose, eps):
         except Exception as e:
             # print(e)
             continue
-
-        if abs(result - purpose) < eps:
-            result_trees.append((tree, result))
+        
+        delta = abs(result - purpose)
+        if delta < eps: result_trees.append((tree, result, delta))
 
     return result_trees
 

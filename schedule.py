@@ -14,28 +14,29 @@ def task_calc_tree_multi():
     tr = calcTree()
 
     with mp.Pool(processes=opt.max_processes) as pool:
-        pbar = tqdm(total=opt.num_iterations*opt.num_trying)
+        pbar = tqdm(total=opt.num_iterations*opt.num_trying, desc="Loading...")
         trees = []
 
         for result in pool.imap(worker_findtree, iterable=range(opt.num_iterations)):
-            if len(result) > 0:
-                for tree, calc_result in result:
-                    print(f"Expression {tr.tree_to_expression(tree)}\nCalu {calc_result}")
 
-                trees.extend(result)
+            # 即时输出
+            if opt.instant_output:
+                for tree, calc_result, delta in result:
+                    print(f"-----\nExpression {tr.tree_to_expression(tree)}\nCalculated Result {calc_result}\nDelta {delta}")
+
+            trees.extend(result)
             pbar.update(opt.num_trying)
             pbar.set_description(f"Current Result: {len(trees)}")
 
         pbar.close()
 
-    for tree, calc_result in trees:
-        print(f"Tree:")
-        # for pre, _, node in RenderTree(tree):
-        #     print(f"{pre}{node.name}")
-        print("计算结果:", calc_result)
-        print("表达式：", tr.tree_to_expression(tree))
-        print("\n")
-    
+    # 按delta从小到大排序并保留一定数量
+    trees.sort(key=lambda res: res[2])
+    trees = trees[:opt.the_first_N]
+
+    print("------ 最终结果 ------")
+    for i, (tree, calc_result, delta) in enumerate(reversed(trees)):
+        print(f"-----Tree {i}\nExpression {tr.tree_to_expression(tree)}\nCalculated Result {calc_result}\nDelta {delta}")
     if len(trees) == 0:
         print("未找到目标")
 
@@ -55,6 +56,7 @@ def task_profiler_solo():
             worker_findtree(1)
             prof.step()
 
+# 入口
 if __name__ == "__main__":
     if opt.profiler:
         task_profiler_solo()

@@ -1,7 +1,8 @@
 # wolfram 代码中转
-import decimal
+import os
 import traceback
 import multiprocessing as mp
+from colorama import Fore
 from decimal import Decimal
 from opt import *
 
@@ -60,17 +61,22 @@ class wolfram:
         Return[SortBy[deltaPi~Join~deltaE,Abs@Last@#&]];
         ];
         """
-        
+       
         if self.wolfram_evaluate(symbol_init) is not None:
-            print("A error occured when Wolfram code 'symbol' loading")
+            self.err("symbol")
         if self.wolfram_evaluate(tree_init) is not None:
-            print("A error occured when Wolfram code 'symbol' loading")
+            self.err("tree")
         if self.wolfram_evaluate(diff_init) is not None:
-            print("A error occured when Wolfram code 'symbol' loading")
+            self.err("diff")
 
     # 精确数值
     def N(self, expr: str, precision=20) -> Decimal:
         return self.wolfram_evaluate(f"N[{expr},{precision}]")
+    
+    def err(self, err_part):
+        print(f"A error occured when Wolfram code '{err_part}' loading")
+        print(f"{Fore.RED}Wolfram 唤起失败，请重新执行程序.{Fore.WHITE}")
+        os._exit(-1)
 
 # 测试用例
 if __name__ == "__main__":

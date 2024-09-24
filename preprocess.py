@@ -3,7 +3,6 @@
 同时通过预处理一些子树并整体作为常量以加快搜索进度
 """
 
-import numpy as np
 import multiprocessing as mp
 from operator import add, sub, mul, pow
 from opt import *
@@ -41,3 +40,12 @@ else:
 
 # 变量占位符，形式为 #k
 placeholder = [f"#{i+1}" for i in range(len(values))]
+
+# cost映射
+cost_dict = {
+    "Pi": 1,
+    "E": 1,
+    "Plus": 3,
+    "Times": 5,
+    "Power": 20
+}

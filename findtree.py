@@ -1,19 +1,26 @@
-import torch.profiler
 import multiprocessing as mp
-import os
+from colorama import init, Fore, Style
 from typing import Tuple
 from itertools import chain
 from tqdm import tqdm
 from tree import *
 from opt import *
-from wl import *
+from preprocess import cost_dict
+from decimal import Decimal
 
-# wolfram仅在主进程加载
-if opt.enable_wolfram and mp.current_process().name == "MainProcess":
-    wolf = wolfram()
-else:
-    wolf = None
+init()
+if opt.profiler:
+    import torch.profiler
 
+# 计算结果代价，比对较优结果
+def cost_of_expr(expr_str: str):
+    score = 0
+
+    # 基础统计分
+    for k, v in cost_dict.items():
+        score += expr_str.count(k) * v
+    
+    return score
 
 
 # 随机找树（用于优化）
@@ -35,8 +42,8 @@ def calc_tree_optim():
         print("------ 最终结果 ------")
         for i, (tree, calc_result, delta) in enumerate(reversed(trees)):
             print(f"-----Tree {i}\nExpression {tr.tree_to_expression(tree)}\nCalculated Result {calc_result}\nDelta {delta}")
-    if len(trees) == 0:
-        print("未找到目标")
+        if len(trees) == 0:
+            print("未找到目标")
 
     return trees
 
@@ -55,10 +62,10 @@ def get_optim_info(tree, final) -> Tuple[str, float]:
     try:
         new_target = float(wolf.wolfram_evaluate(f"InverseSolve[optimalExpr,{final}]"))
     except:
-        raise ValueError("反求错误，更换其它树")
+        raise ValueError(f"{Fore.RED}反求错误，更换其它树{Fore.WHITE}")
     
     if abs(new_target) < 1 or abs(new_target) > 1e4:
-        raise ValueError("目标大小超限，更换其它树")
+        raise ValueError(f"{Fore.RED}目标大小超限，更换其它树{Fore.WHITE}")
     
     return current_tree_expression_x, new_target
 
@@ -66,16 +73,18 @@ def get_optim_info(tree, final) -> Tuple[str, float]:
 def task_optim_calc_tree():
     tr = calcTree()
     tree_expression_x = [] # 含有 x 变元的表达式
+    final_target = opt.target_number
     current_target = opt.target_number
 
+    # 主循环
     for loop_i in range(opt.optim_loop_N):
 
-        print(f"---------- epoch {loop_i+1} ----------")
+        print(f"{Fore.BLUE}---------- epoch {loop_i+1} ----------{Fore.WHITE}")
 
         # 通过动态设置opt来调整寻找方案
         opt.target_number = current_target
         opt.eps = opt.optim_eps[loop_i]
-        print(f"当前优化目标：{opt.target_number}\n当前目标精度要求：{opt.eps}")
+        print(f"当前优化目标：{current_target}\n当前目标精度要求：{opt.optim_eps[loop_i]}")
 
         # 搜索
         while True:
@@ -106,22 +115,49 @@ def task_optim_calc_tree():
                 if suc:
                    break
                 else:
-                    print("当前搜索未寻到可供优化算式，将会重试") 
+                    print(f"{Fore.YELLOW}当前搜索未寻到可供优化算式，将会重试{Fore.WHITE}") 
 
             # 没有搜索到树
             else:
-                print("未能在当前精度找到目标算式，将会重试")
+                print(f"{Fore.YELLOW}未能在当前精度找到目标算式，将会重试{Fore.WHITE}")
         
-    # 完成优化大循环，迭代所有式子
+    # 完成优化大循环，迭代得到终式
     current_formula = "x"
     for nest_formula in tree_expression_x:
         current_formula = current_formula.replace("x", nest_formula)
     current_formula = wolf.wolfram_evaluate(f"ReplaceExpr[{current_formula}]")
-    value_formula = str(wolf.wolfram_evaluate(f"ExprN[{current_formula},30]"))
+    value_formula = Decimal(wolf.wolfram_evaluate(f"ExprN[{current_formula},30]"))
 
-    print(f"最终结果：\nExpression: {current_formula}\nValue: {value_formula}")
-    os._exit(0)
+    # 回溯，防止互相干扰
+    opt.target_number = final_target
 
+    print(f"{Fore.GREEN}| 优化寻树 |\nExpression: {current_formula}\nValue: {str(value_formula)}{Fore.WHITE}")
+
+    return current_formula, value_formula
+
+# 代价比较优化找树主循环
+def task_cost_optim_calc_tree():
+    best_trees = []
+    
+    for i in range(opt.cost_loop_N):
+        print(f"{Fore.BLUE}{Style.BRIGHT}############################################ EPOCH {i}{Style.RESET_ALL}{Fore.WHITE}")
+        this_tree = task_optim_calc_tree()
+        if opt.remove_low_quality_eps:
+            # 精度不满足要求
+            if abs(float(this_tree[1]) - opt.target_number) > opt.final_eps:
+                print(f"{Fore.YELLOW}精度不满足要求，该轮结果已丢弃{Fore.WHITE}")
+                continue
+        best_trees.append(this_tree)
+
+    costs = [cost_of_expr(str(tree[0])) for tree in best_trees]
+    min_cost_i = sorted(enumerate(costs), key=lambda tr: tr[1])[0][0]
+
+    print(f"{Fore.GREEN}{Style.BRIGHT}")
+    print(f"| 代价优化寻树 |")
+    print(f"Expression: {best_trees[min_cost_i][0]}")
+    print(f"Value: {str(best_trees[min_cost_i][1])}")
+    print(f"Cost: {costs[min_cost_i]} / {str(costs)}")
+    print(f"{Style.RESET_ALL}{Fore.WHITE}")
 
 
 # 单树性能测试

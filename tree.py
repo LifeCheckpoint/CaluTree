@@ -106,7 +106,17 @@ def generate_tree_to_purpose(num_trees, max_depth, purpose, eps) -> Tuple[Node, 
 
 def worker_findtree(_):
     try:
-        return generate_tree_to_purpose(opt.num_trying, opt.depth, opt.purpose_number, opt.eps)
+        print(opt.target_number)
+        return generate_tree_to_purpose(opt.num_trying, opt.depth, opt.target_number, opt.eps)
+    except Exception as e:
+        print(f"Error occured in worker: {e}")
+        traceback.print_exc()
+        return []
+
+def worker_findtree_dynamic(target_number, eps, value):
+    values = value
+    try:
+        return generate_tree_to_purpose(opt.num_trying, opt.depth, target_number, eps)
     except Exception as e:
         print(f"Error occured in worker: {e}")
         traceback.print_exc()

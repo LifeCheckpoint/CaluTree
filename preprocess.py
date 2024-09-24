@@ -4,11 +4,13 @@
 """
 
 import numpy as np
+import multiprocessing as mp
 from operator import add, sub, mul, pow
 from opt import *
+from wl import consts_pool
 from schedule import wolf
 
-# 定义运算符字典, 有数值错误会抛出到顶层
+# 运算符字典
 using_operators = {
     "1": add,
     "2": sub,
@@ -19,10 +21,14 @@ using_operators = {
 }
 
 # 定义参与运算的常数，如果使用了 Wolfram 引擎可以更简明地定义
+# 在wl.py中设置常量
+# wolfram仅在主进程加载，附属进程通过传参获得values
 
-if opt.wolfram_using:
-    values_wolf = wolf.wolfram_evaluate("N[{Pi, E, Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E, (Pi Pi Pi)^Pi/(Pi-E)},17]")
-    values =[float(i) for i in list(values_wolf)]
+if opt.enable_wolfram and mp.current_process().name == "MainProcess":
+    values_wolf = wolf.wolfram_evaluate("N[{" + consts_pool + "},17]")
+    values = [float(i) for i in list(values_wolf)]
+
+# 兼容非wolfram
 else:
     values = [
         3.1415926535897932, 2.7182818284590452, 1.1557273497909217179,
@@ -33,5 +39,5 @@ else:
         114516.426867869998
     ]
 
-# 变量占位符
+# 变量占位符，形式为 #k
 placeholder = [f"#{i+1}" for i in range(len(values))]

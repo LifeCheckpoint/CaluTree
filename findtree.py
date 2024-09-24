@@ -144,7 +144,7 @@ def task_cost_optim_calc_tree():
         this_tree = task_optim_calc_tree()
         if opt.remove_low_quality_eps:
             # 精度不满足要求
-            if abs(float(this_tree[1]) - opt.target_number) > opt.final_eps:
+            if abs(float(this_tree[1]) - opt.target_number) > opt.final_eps or (opt.positive_eps and float(this_tree[1]) < opt.target_number):
                 print(f"{Fore.YELLOW}精度不满足要求，该轮结果已丢弃{Fore.WHITE}")
                 continue
         best_trees.append(this_tree)

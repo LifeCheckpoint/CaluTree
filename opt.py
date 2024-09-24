@@ -1,5 +1,5 @@
 class opt:
-    cost_loop_N = 100 # 代价优化比较的大循环次数
+    cost_loop_N = 300 # 代价优化比较的大循环次数
     depth = 2 # 树深度
     enable_cost_algo = True # 启用cost优化方法（需要enable_optim_algo）
     enable_optim_algo = True # 启用数学优化方法（需要enable_wolfram）

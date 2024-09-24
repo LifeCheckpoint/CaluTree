@@ -150,13 +150,21 @@ def task_cost_optim_calc_tree():
         best_trees.append(this_tree)
 
     costs = [cost_of_expr(str(tree[0])) for tree in best_trees]
-    min_cost_i = sorted(enumerate(costs), key=lambda tr: tr[1])[0][0]
+    calc_value = [abs(float(tree[1]) - opt.target_number) for tree in best_trees]
+
+    min_cost_i = sorted(enumerate(costs), key=lambda c: c[1])[0][0]
+    min_eps_i = sorted(enumerate(calc_value), key=lambda c: c[1])[0][0]
 
     print(f"{Fore.GREEN}{Style.BRIGHT}")
-    print(f"| 代价优化寻树 |")
-    print(f"Expression: {best_trees[min_cost_i][0]}")
-    print(f"Value: {str(best_trees[min_cost_i][1])}")
-    print(f"Cost: {costs[min_cost_i]} / {str(costs)}")
+    print(f" | 代价优化寻树 |")
+    print("\n| - cost最小 -")
+    print(f"| Expression: {best_trees[min_cost_i][0]}")
+    print(f"| Value: {str(best_trees[min_cost_i][1])}")
+    print(f"| Cost: {costs[min_cost_i]} / {str(costs)}")
+    print("\n| - 精度最佳 -")
+    print(f"| Expression: {best_trees[min_eps_i][0]}")
+    print(f"| Value: {str(best_trees[min_eps_i][1])}")
+    print(f"| Cost: {costs[min_eps_i]} / {str(costs)}")
     print(f"{Style.RESET_ALL}{Fore.WHITE}")
 
 

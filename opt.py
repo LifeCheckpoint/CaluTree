@@ -17,6 +17,7 @@ class opt:
     optim_output = False # 优化模式是否输出多个寻树结果
     precision_limit = 1e18 # 计算限度
     profiler = False # 启用性能分析
+    optim_limit = [1, 1e4] # 微分斜率大小限度
     target_number = 114514.1919810 # 目标数字
     the_first_N = 5 # 保留前N个结果
     wolfram_path = r"D:\Programs\Wolfram Mathematica 14.1\MathKernel.exe" # Wolfram MathKernel路径

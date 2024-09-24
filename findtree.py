@@ -64,7 +64,7 @@ def get_optim_info(tree, final) -> Tuple[str, float]:
     except:
         raise ValueError(f"{Fore.RED}反求错误，更换其它树{Fore.WHITE}")
     
-    if abs(new_target) < 1 or abs(new_target) > 1e4:
+    if abs(new_target) < opt.optim_limit[0] or abs(new_target) > opt.optim_limit[1]:
         raise ValueError(f"{Fore.RED}目标大小超限，更换其它树{Fore.WHITE}")
     
     return current_tree_expression_x, new_target

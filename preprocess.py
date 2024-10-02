@@ -46,6 +46,6 @@ cost_dict = {
     "Pi": 1,
     "E": 1,
     "Plus": 3,
-    "Times": 8,
-    "Power": 32
+    "Times": 12,
+    "Power": 72
 }

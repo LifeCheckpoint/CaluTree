@@ -11,7 +11,8 @@ if opt.enable_wolfram and mp.current_process().name == "MainProcess":
     from wolframclient.language import wlexpr
 
 # 定义的常数池，参与运算搜索
-consts_pool = "Pi, E, Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E, (Pi Pi Pi)^Pi/(Pi-E)"
+consts_pool = "Pi, E, Pi/E, E/Pi, Pi+E, Pi-E, Pi E, E^Pi, Pi^E, Pi Pi, E E, Pi+Pi, E+E, Pi^Pi, E^E, \
+    (Pi Pi Pi)^Pi/(Pi-E), Pi+Pi+Pi, E+E+E, Pi+Pi+E, Pi+E+E, Pi/Pi, Pi^Pi^Pi, E^E^E"
 
 class wolfram:
     # 执行wolfram语句

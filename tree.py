@@ -7,6 +7,7 @@ from opt import *
 from preprocess import *
 from anytree import Node
 
+# 忽略运算警告
 warnings.simplefilter("ignore", RuntimeWarning)
 
 # calcTree仍然用传统的递归计算方法，因为wl的速度不会比原生计算速度高

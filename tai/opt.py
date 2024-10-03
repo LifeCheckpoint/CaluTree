@@ -11,8 +11,7 @@ class opt:
     class treeGenerate:
         depth = 3
         num_expressions = 10**7 # 一次表达式生成数量
-        batch = 10**4 # 一轮表达式生成次数
-        keep_N = 5 # 每轮生成保留前N个结果
+        batch = 10**1 # 一轮表达式生成次数
 
     class searching:
         target_number = 114514.1919810 # 搜索目标

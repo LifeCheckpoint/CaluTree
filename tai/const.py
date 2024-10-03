@@ -2,7 +2,7 @@ import numpy as np
 from operator import add, sub, mul, pow
 from tai.opt import opt
 from tai.wl import *
-from schedule import wolf
+from tai.schedule import wolf
 
 
 # 运算符字典，注意，为了taichi正常编译，运算符字典已经写死，请勿随意更改
@@ -20,7 +20,7 @@ operators_symbol_num = len(operators_symbol)
 
 # 定义参与运算的常数，如果使用了 Wolfram 引擎可以更简明地定义
 # 在wl.py中设置常量
-if opt.enable_wolfram:
+if opt.general.enable_wolfram:
     values_wolf = wolf.wolfram_evaluate("N[{" + consts_pool + "},17]")
     values = np.array([float(i) for i in list(values_wolf)])
 # 兼容非wolfram
@@ -33,6 +33,7 @@ else:
         5.4365636569180904707,  36.462159607207911771, 15.154262241479264190,
         114516.426867869998
     ])
+
 # 变量占位符，形式为 #k
 const_holder = np.array([f"#{i+1}" for i in range(len(values))])
 const_num = len(const_holder)
@@ -65,6 +66,8 @@ nest_rule_symbol = [
 nest_rule = np.array([ch for ch in nest_rule_symbol[opt.treeGenerate.depth].replace("E", "1").replace("S", "0")], dtype=np.int32)
 nest_rule_length = len(nest_rule)
 
+# 每一轮计算表达式总数
+num_expressions = opt.treeGenerate.num_expressions
 
 # cost映射
 cost_dict = {

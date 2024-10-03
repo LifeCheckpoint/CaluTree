@@ -36,6 +36,7 @@ else:
 # 变量占位符，形式为 #k
 const_holder = np.array([f"#{i+1}" for i in range(len(values))])
 const_num = len(const_holder)
+value_np = np.array(values)
 
 
 # 规则表
@@ -63,7 +64,6 @@ nest_rule_symbol = [
 # 转换nest_rule为ndarray，E与S分别匹配1、0
 nest_rule = np.array([ch for ch in nest_rule_symbol[opt.depth].replace("E", "1").replace("S", "0")], dtype=np.int32)
 nest_rule_length = len(nest_rule)
-print(nest_rule)
 
 
 # cost映射

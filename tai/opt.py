@@ -5,13 +5,21 @@ class opt:
     class general:
         device = "cuda"
 
+    class treeGenerate:
+        depth = 3
+        num_expressions = 10**7 # 一次表达式生成数量
+        batch = 10**4 # 一轮表达式生成次数
+
+    class searching:
+        target_number = 114514.1919810 # 搜索目标
+        precision_limit = 1e20 # 计算精度
+
     cost_loop_N = 500 # 代价优化比较的大循环次数
-    depth = 3 # 树深度
     enable_cost_algo = True # 启用cost优化方法（需要enable_optim_algo）
     enable_optim_algo = True # 启用数学优化方法（需要enable_wolfram）
     enable_wolfram = True # 使用Wolfram完成搜索算法
     eps = 0.1 # 搜索过滤精度
-    final_eps = 0.00000001 # （用于cost优化）搜索过滤精度
+    final_eps = 0.0000001 # （用于cost优化）搜索过滤精度
     remove_low_quality_eps = True # （用于cost优化）是否丢弃低于final_eps的结果
     instant_output = True # 纯随机算法即时输出
     positive_eps = True # 要求搜索结果大于等于目标值
@@ -20,7 +28,6 @@ class opt:
     optim_eps = [0.1, 0.001, 0.001, 0.001] # 优化精度
     optim_loop_N = 4 # 优化大循环次数
     optim_output = False # 优化模式是否输出多个寻树结果
-    precision_limit = 1e18 # 计算限度
     optim_limit = [1, 1e4] # 微分斜率大小限度
     target_number = 114514.1919810 # 目标数字
     the_first_N = 5 # 保留前N个结果

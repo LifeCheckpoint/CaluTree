@@ -5,15 +5,23 @@ import taichi as ti
 import numpy as np
 from time import time
 from tai.const import *
+from tai.opt import opt
 
-ti.init(arch=ti.cuda)
+if opt.general.device.lower() == "cuda":
+    ti.init(arch=ti.cuda)
+else:
+    ti.init(arch=ti.cpu)
 
-num_expressions = 10**7 # 生成的表达式数量
-batch = 10**4
+# 读取opt到全局变量
+num_expressions = opt.treeGenerate.num_expressions
+batch = opt.treeGenerate.batch
+prec_limit = opt.searching.precision_limit
+target_number = opt.searching.target_number
 
-# 创建holder作为常数+符号占位符，同时以holder_index_field作为索引标号
+# holder作为常数+符号占位符，同时以holder_index_field作为索引标号
 holder = np.concatenate([const_holder, operators_symbol])
 
+# 真实值映射
 value_field = ti.field(ti.f64, shape=len(const_holder))
 value_field.from_numpy(value_np)
 
@@ -24,19 +32,11 @@ holder_index_field.from_numpy(np.array([i for i in range(len(holder))]))
 rule_field = ti.field(ti.i32, shape=nest_rule_length)
 rule_field.from_numpy(nest_rule)
 
-# token输出字段
-token_result_field = ti.field(ti.i32, shape=(num_expressions, nest_rule_length))
+token_result_field = ti.field(ti.i32, shape=(num_expressions, nest_rule_length)) # token输出字段
+stack_field = ti.field(ti.f64, shape=(num_expressions, nest_rule_length)) # 全局栈字段
+calc_result_field = ti.field(ti.f64, shape=num_expressions) # 求值结果字段
+eps_result_field = ti.field(ti.f64, shape=num_expressions) # 目标误差字段
 
-# 全局栈字段
-stack_field = ti.field(ti.f64, shape=(num_expressions, nest_rule_length))
-
-# 求值结果字段
-calc_result_field = ti.field(ti.f64, shape=num_expressions)
-
-# 常量映射函数，给定token编号返回常量
-@ti.func
-def get_constant(token: ti.i32) -> ti.f64:
-    return value_field[token]
 
 # 计算表达式对应值
 @ti.func
@@ -47,7 +47,7 @@ def evaluate_single_expr(i: int):
         j = nest_rule_length - j_r - 1 # 首项为 nest_rule_length - 1， 末项为 0
         token = token_result_field[i, j]
         if token < const_num:  # 常量
-            stack_field[i, stack_top] = get_constant(token)
+            stack_field[i, stack_top] = value_field[token] # 常量映射
             stack_top += 1
         else:  # 操作符
             if stack_top >= 2:
@@ -69,13 +69,16 @@ def evaluate_single_expr(i: int):
                 elif real_symbol_token == 5:  # s6: I
                     stack_field[i, stack_top] = a
                 
-                if stack_field[i, stack_top] > 2e10 or stack_field[i, stack_top] < -2e10:
+                if stack_field[i, stack_top] > prec_limit or stack_field[i, stack_top] < -prec_limit:
                     stack_field[i, stack_top] = ti.math.inf
                     
                 stack_top += 1
 
     calc_result_field[i] = stack_field[i, 0] if stack_top > 0 else ti.math.inf
 
+@ti.func
+def evaluate_eps_expr(i: int):
+    eps_result_field[i] = abs(calc_result_field[i] - target_number)
 
 # 生成随机表达式并计算值
 @ti.kernel
@@ -96,6 +99,10 @@ def generate_calculate_random_expressions():
         # 求值
         evaluate_single_expr(i)
 
+        # 求误差
+        evaluate_eps_expr(i)
+
+
 
 # 将索引转换为实际的字符串表达式
 def convert_to_expressions(result_np):
@@ -110,6 +117,8 @@ for bt in range(1000):
 # 将结果转换回NumPy数组并保存
 token_np = token_result_field.to_numpy()
 calc_np = calc_result_field.to_numpy()
+eps_np = eps_result_field.to_numpy()
+
 print(f"Time used {time() - t} s")
 print(f"expr_N = {len(calc_np)} × {batch}")
 
@@ -118,4 +127,4 @@ expressions = convert_to_expressions(token_np[:10])
 
 # 保存结果（这里只保存前10个作为示例）
 for i, expr in enumerate(expressions):
-    print(f"Expression {i}: {' '.join(expr)}    |    Result: {calc_np[i]}")
+    print(f"Expression {i}: {' '.join(expr)}    |    Result: {calc_np[i]}    |    Eps:{eps_np[i]}")

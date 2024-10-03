@@ -62,7 +62,7 @@ nest_rule_symbol = [
 ]
 
 # 转换nest_rule为ndarray，E与S分别匹配1、0
-nest_rule = np.array([ch for ch in nest_rule_symbol[opt.depth].replace("E", "1").replace("S", "0")], dtype=np.int32)
+nest_rule = np.array([ch for ch in nest_rule_symbol[opt.treeGenerate.depth].replace("E", "1").replace("S", "0")], dtype=np.int32)
 nest_rule_length = len(nest_rule)
 
 

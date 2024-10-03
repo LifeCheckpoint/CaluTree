@@ -5,7 +5,7 @@ from colorama import Fore
 from decimal import Decimal
 from tai.opt import opt
 
-if opt.enable_wolfram:
+if opt.general.enable_wolfram:
     from wolframclient.evaluation import WolframLanguageSession
     from wolframclient.language import wlexpr
 
@@ -29,7 +29,7 @@ class wolfram:
     # 初始化wolfram语句，支持算法运行
     def __init__(self):
         # 创建wolfram会话
-        self.session = WolframLanguageSession(kernel=opt.wolfram_path)
+        self.session = WolframLanguageSession(kernel=opt.general.wolfram_path)
 
         # 符号替换初始化
         symbol_init = """
@@ -73,6 +73,7 @@ class wolfram:
     def N(self, expr: str, precision=20) -> Decimal:
         return self.wolfram_evaluate(f"N[{expr},{precision}]")
     
+    # 加载错误提示
     def err(self, err_part):
         print(f"A error occured when Wolfram code '{err_part}' loading")
         print(f"{Fore.RED}Wolfram 唤起失败，请重新执行程序.{Fore.WHITE}")

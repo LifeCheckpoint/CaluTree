@@ -6,7 +6,7 @@ class opt:
         device = "cuda"
 
     cost_loop_N = 500 # 代价优化比较的大循环次数
-    depth = 2 # 树深度
+    depth = 3 # 树深度
     enable_cost_algo = True # 启用cost优化方法（需要enable_optim_algo）
     enable_optim_algo = True # 启用数学优化方法（需要enable_wolfram）
     enable_wolfram = True # 使用Wolfram完成搜索算法

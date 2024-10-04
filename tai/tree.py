@@ -6,9 +6,10 @@ from tai.const import const_holder
 from tai.opt import opt
 from time import time
 from tqdm import tqdm
-import gc
 import numpy as np
 import taichi as ti
+
+from memory_profiler import profile
 
 if opt.general.device.lower() == "cuda":
     ti.init(arch=ti.cuda)
@@ -169,10 +170,11 @@ def generate_evaluate_random_expr(
         calc_result.append(calc_np[index_best])
         eps_result.append(eps_np[index_best])
 
-        # print(eps_np[index_best])
+        del token_np
+        del calc_np
+        del eps_np
 
-        if (epoch + 1) % 20 == 0:
-            gc.collect()
+        # print(eps_np[index_best])
 
         bar.update(num_expr)
     
@@ -181,13 +183,15 @@ def generate_evaluate_random_expr(
 
 
 # 测试用例，为了正常初始化需解除注释
-    
+
 tk, ca, ep = generate_evaluate_random_expr(
     batch=opt.treeGenerate.batch, 
     num_expr=num_expressions, 
     prec_limit=opt.searching.precision_limit, 
     target_number=opt.searching.target_number
 )
+
+ti.profiler.memory_profiler.print_memory_profiler_info()
 
 # 转换为前缀表达式
 expressions = exprindex_2_prefix(tk[:10])

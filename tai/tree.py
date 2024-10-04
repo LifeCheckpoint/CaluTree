@@ -12,10 +12,13 @@ import taichi as ti
 from memory_profiler import profile
 
 if opt.general.device.lower() == "cuda":
-    ti.init(arch=ti.cuda)
+    arch = ti.cuda
+elif opt.general.device.lower == "vulkan":
+    arch = ti.vulkan
 else:
-    ti.init(arch=ti.cpu)
+    arch = ti.cpu
 
+ti.init(arch=arch, random_seed=int(time()))
 
 # 最小值搜索器
 @ti.data_oriented
@@ -170,25 +173,23 @@ class EvalTree:
 
     # 将索引转换为实际的字符串表达式
     def exprindex_2_prefix(self, result_np):
-        return [[self.holder[idx] for idx in expr] for expr in result_np]
+        return [[self.holder[int(idx)] for idx in expr] for expr in result_np]
     
     # 返回精度最高的计算结果
     def getFinalResult(self):
-        # 将结果转换回NumPy数组并保存
-        token_np = self.token_result_field.to_numpy()
-        calc_np = self.calc_result_field.to_numpy()
-        eps_np = self.eps_result_field.to_numpy()
-
         # 效率考虑，仅保留精度最高第一个结果
         index_best = self.min_eps_index()
 
         # 取得最佳结果
-        tidx, cidx, eidx = token_np[index_best], calc_np[index_best], eps_np[index_best]
+        # 使用numpy切片会有严重的内存泄露，所以使用field循环赋值
 
-        # 清理内存
-        del token_np
-        del calc_np
-        del eps_np
+        tidx, cidx, eidx = np.zeros((nest_rule_length, ), dtype=np.float64), 0.0, 0.0
+
+        for i in range(nest_rule_length):
+            tidx[i] = self.token_result_field[index_best, i]
+
+        cidx = self.calc_result_field[index_best]
+        eidx = self.eps_result_field[index_best]
 
         return tidx, cidx, eidx
 
@@ -217,11 +218,13 @@ def generate_evaluate_random_expr(
         token_result.append(tidx)
         calc_result.append(cidx)
         eps_result.append(eidx)
+        ti.sync()
 
         # 清理计算对象
         del eval_tree
 
         bar.update(num_expr)
+        bar.desc = f"Epoch {epoch+1}"
     
     bar.close()
     return token_result, calc_result, eps_result

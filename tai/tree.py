@@ -5,41 +5,74 @@ from tai.const import *
 from tai.const import const_holder
 from tai.opt import opt
 from time import time
+from utils import suppress_print
 from tqdm import tqdm
 import numpy as np
 import taichi as ti
 
-from memory_profiler import profile
+# 重置并初始化Taichi
+@suppress_print
+def reset_init_taichi():
+    if opt.general.device.lower() == "cuda":
+        arch = ti.cuda
+    elif opt.general.device.lower == "vulkan":
+        arch = ti.vulkan
+    else:
+        arch = ti.cpu
 
-if opt.general.device.lower() == "cuda":
-    arch = ti.cuda
-elif opt.general.device.lower == "vulkan":
-    arch = ti.vulkan
-else:
-    arch = ti.cpu
-
-ti.init(arch=arch, random_seed=int(time()))
+    ti.init(arch=arch, random_seed=int(time()))
 
 # 最小值搜索器
 @ti.data_oriented
 class MinEpsIndexFinder:
-    def __init__(self):
-        self.min_eps = ti.field(dtype=ti.f64, shape=())
-        self.min_index = ti.field(dtype=ti.i32, shape=())
+
+    def __init__(self, expr_n):
+        self.fb = ti.FieldsBuilder()
+
+        self.min_eps = ti.field(dtype=ti.f64)
+        self.min_index = ti.field(dtype=ti.i32)
+        self.block_min_eps = ti.field(dtype=ti.f64)
+        self.block_min_index = ti.field(dtype=ti.i32)
+
+        self.fb.dense(ti.i, 1).place(self.min_eps)
+        self.fb.dense(ti.i, 1).place(self.min_index)
+        self.fb.dense(ti.i, expr_n).place(self.block_min_eps)
+        self.fb.dense(ti.i, expr_n).place(self.block_min_index)
+
+        self.st = self.fb.finalize()
+
+    def __del__(self):
+        self.st.destroy()
 
     @ti.kernel
     def find_min_eps_index(self, eps_field: ti.template(), index_field: ti.template()):
-        # 初始化最小值为第一个元素
-        self.min_eps[None] = eps_field[0]
+        n = eps_field.shape[0]
         
-        # 第一阶段：找到最小eps值
-        for i in eps_field:
-            ti.atomic_min(self.min_eps[None], eps_field[i])
+        # 每个线程处理的元素数量
+        block_size = 256  # 可以根据实际情况调整
+        num_blocks = (n + block_size - 1) // block_size
         
-        # 第二阶段：找到最小eps值对应的索引
-        for i in eps_field:
-            if eps_field[i] == self.min_eps[None]:
-                self.min_index[None] = index_field[i]
+        # 第一阶段：并行计算每个块的最小值
+        for block_id in range(num_blocks):
+            self.min_eps[0] = 10000.0
+            min_index = -1
+            for i in range(block_id * block_size, min(n, (block_id + 1) * block_size)):
+                if eps_field[i] < self.min_eps[0]:
+                    self.min_eps[0] = eps_field[i]
+                    min_index = index_field[i]
+            self.block_min_eps[block_id] = self.min_eps[0]
+            self.block_min_index[block_id] = min_index
+        
+        # 第二阶段：查找全局最小值
+        ti.loop_config(serialize=True)
+        for i in range(num_blocks):
+            if i == 0 or self.block_min_eps[i] < self.min_eps[0]:
+                self.min_eps[0] = self.block_min_eps[i]
+                self.min_index[0] = self.block_min_index[i]
+
+    # 获取结果
+    def get_min_index(self) -> int:
+        return self.min_index[0]
 
 # 防止内存泄露，包裹至类中
 @ti.data_oriented
@@ -163,12 +196,11 @@ class EvalTree:
             self.evaluate_eps_expr(i, target_number)
 
     # 寻找最小eps的表达式索引
-    def min_eps_index(self) -> int:    
-        finder = MinEpsIndexFinder()
+    def min_eps_index(self, expr_n: int) -> int:    
+        finder = MinEpsIndexFinder(expr_n)
         finder.find_min_eps_index(self.eps_result_field, self.index_key_field)
-
-        min_index = finder.min_index[None]
-        
+        min_index = finder.get_min_index()
+        del finder
         return min_index
 
     # 将索引转换为实际的字符串表达式
@@ -178,7 +210,7 @@ class EvalTree:
     # 返回精度最高的计算结果
     def getFinalResult(self):
         # 效率考虑，仅保留精度最高第一个结果
-        index_best = self.min_eps_index()
+        index_best = self.min_eps_index(num_expressions)
 
         # 取得最佳结果
         # 使用numpy切片会有严重的内存泄露，所以使用field循环赋值
@@ -201,13 +233,13 @@ def generate_evaluate_random_expr(
         target_number=opt.searching.target_number
     ):
 
-    bar = tqdm(desc="生成计算", total=batch*num_expr)
+    bar = tqdm(desc="Evaluating Started", total=batch*num_expr)
 
     token_result = []
     calc_result = []
     eps_result = []
 
-    for epoch in ti.static(range(batch)):
+    for epoch in range(batch):
 
         # 创建计算对象
         eval_tree = EvalTree()
@@ -225,12 +257,19 @@ def generate_evaluate_random_expr(
 
         bar.update(num_expr)
         bar.desc = f"Epoch {epoch+1}"
+
+        # 定时重置ti防止内存问题累积
+        if (epoch + 1) % 20 == 0:
+            print("\nResetting Taichi...")
+            reset_init_taichi()
     
     bar.close()
     return token_result, calc_result, eps_result
 
 
-# 测试用例，为了正常初始化需解除注释
+# 测试用例
+
+reset_init_taichi()
 
 tk, ca, ep = generate_evaluate_random_expr(
     batch=opt.treeGenerate.batch, 
@@ -242,6 +281,8 @@ tk, ca, ep = generate_evaluate_random_expr(
 # 转换为前缀表达式
 tool_tree = EvalTree()
 expressions = tool_tree.exprindex_2_prefix(tk[:10])
+del tool_tree
+reset_init_taichi()
 
 # 保存结果（这里只保存前10个作为示例）
 for i, expr in enumerate(expressions):
